@@ -1,0 +1,6 @@
+1. Maybe remove the global guarantee stuff from the description
+2. Check RL notation throughout the thesis
+3. Add overview tables to experiments section
+4. Add units to cost
+5. Add macro for trajNN in hardware experiments
+6. Fix sizes of images

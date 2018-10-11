@@ -1,0 +1,14 @@
+%----------------------------------------------------------------------------------------
+%	ABSTRACT PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+\addchaptertocentry{\abstractname} % Add the abstract to the table of contents
+Robot controllers, including locomotion controllers, often consist of expert-designed heuristics. %These heuristics can be hard to tune, particularly in higher dimensions. 
+It is typical to use simulation to tune or learn these heuristics, and test on hardware. However, controllers learned in simulation often don't transfer to hardware due to modelling errors. One way to overcome this is to optimize controller directly on hardware, which can be expensive, due to the time involved and fear of damage to the robot. This has led to an interest in using data-efficient learning techniques like Bayesian Optimization. But the performance of Bayesian Optimization typically degrades in higher dimensions, including dimensions of the scale seen in bipedal locomotion. We aim to overcome this problem by incorporating prior knowledge from simulation to reduce the dimensionality of the problem, with a focus on bipedal locomotion. We propose two ways of doing this, hand-designed features based on knowledge of human walking and using neural networks to extract this information automatically. 
+%Our hand-designed features project the initial controller space to a 1-dimensional space, and show promise in simulation and on hardware. On the other hand, the automatically learned features can be of varying dimensions, and also lead to improvement on traditional Bayesian Optimization methods. 
+Our hardware experiments on the ATRIAS robot, and simulation experiments on two robots - ATRIAS and a 7-link biped model, show that these feature transforms capture important aspects of walking and accelerate learning on hardware and perturbed simulation, as compared to traditional Bayesian Optimization and other optimization methods. Another question arises: What if the simulation significantly differs from hardware? To answer this, we create increasingly approximate simulators and study the effect of increasing simulation-hardware mismatch on the performance of Bayesian optimization. We also compare our approach to other approaches from literature, and find it to be more reliable, especially in cases of high mismatch.
+
+An alternative to directly optimizing policies on hardware is to learn robust policies in simulation that can directly be implemented on hardware. We study the effect of structure on the robustness of very high-dimensional neural network policies. Our experiments on the ATRIAS robot show that structured neural network policies have a higher rate of transfer between simulation and hardware than unstructured policies. 
+
+\end{abstract}
