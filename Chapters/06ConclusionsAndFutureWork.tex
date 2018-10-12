@@ -52,10 +52,32 @@ We train two neural network policies in simulation - a general NN policy that di
 
 There are several extensions to the current work, as well as unanswered questions about learning for robotics that we would like to talk about now.
 
-\subsection{General purpose features transforms}
+\subsection{Learning general features from data}
 
-We presented two sets of feature transforms for adding simulation information to hardware experiments. We are 
+We presented two sets of feature transforms for adding simulation information to hardware experiments. So far, the features were either hand-designed or needed expert input in the relevant simulation trajectories. Very often, there were iterations needed where the right features were not selected, or too many features were selected, bringing down the sample-efficiency. Thus, it is important to study if such features can be learned directly from data, and important characteristics dynamically added or removed based on the problem at hand. 
+
+Features should also include feedback from the environment, for example contact forces. Other than just the end-effector trajectory, the instantaneous forces can also be indicative of the success or failure of particular controllers. Learning low-dimensional representations of these feedback trajectories is an interesting direction for future work. 
+
+Adapting features across multiple tasks and changing lower dimensional representations with context, can be useful for transferring data between different tasks and robots. This requires a sample-efficient way of updating features based on newly observed hardware samples, along with automatically determining the relative importance of features. All of these can together be used to build task-specific lower-dimensional representations that can be learned dynamically, and used to transfer information across multiple tasks.
+
 
 \subsection{Safe exploration and learning}
 
+A major concern with learning for robots is the safety of the robot. Exploration often involves sampling controllers that could potentially be unstable and damage our robots. Even worse, robots can damage their surroundings, including people and objects that they interact with. Taking safety of a robot and its environment into account is important when using approaches like Bayesian optimization and reinforcement learning.
+
+\cite{berkenkamp2017safe} develop guarantees for model-based reinforcement learning when the dynamics are approximated as a Gaussian process. The policies sampled are guaranteed to be in the region of attraction of an initial stable policy. This is an important work in the direction of building guarantees about safety, but stable initial policies can be hard to find in high-dimensional systems. Building dynamics models might also be prohibitively expensive, and nearly impossible to make them accurate. In such cases, detecting failure or a mismatch between expectation and measurement becomes important. 
+
+We think that starting from conservative policies learned in simulation and slowly building dynamics models, and exploring using these is an interesting direction to explore in the future. Exploration while learning dynamics can be done with the help of conservative models and controllers, that build failure maps from expected and measured sensor feedback. All of this together can bring us closer to truly autonomous robots that learn to accomplish goals, starting from inaccurate models and conservative controllers, and slowly learning better controllers along with the dynamics.
+
 \subsection{Transfer learning between controllers and robots}
+
+Given how expensive reinforcement learning typically is, it is important to learn systems that can share information and data. Transfer learning is a popular research direction, with works like \cite{finn2017one} trying to identify task-parameters and learn networks that generalize across multiple tasks. While this is promising, compelling hardware demonstrations of these approaches are few. We believe that automatic relevance determination between task-specific features can be an important step towards transfer learning and data sharing. Different tasks can have different important features, and a correspondingly different cost function. But data from the old task can be included as if from a different source, as in \cite{poloczek2016multi}. 
+
+In addition, learning problem representations that can generalize across multiple robots can allow for
+data transfer across multiple robots. Sharing data in this manner can be extremely helpful in learning to do new tasks sample-efficiently. 
+
+\section{Closing remarks}
+
+This thesis tried to address the problem of fast learning on highly dynamic systems, with the help of simulation. We found that even when the simulator is inaccurate, information from simulation can guide hardware experiments to improve sample-efficiency. We also showed that learning lower-dimensional representations of the controller space in simulation not only helps learn faster on hardware, but also enables us to update the simulation in the same space. 
+
+All of this points towards the advantages of learning representations for optimization and learning. We believe that there are additional advantages to learning representations, like failure detection, safety and transfer learning. We would like to continue exploring these directions in the future.
