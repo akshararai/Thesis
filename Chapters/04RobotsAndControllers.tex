@@ -1,6 +1,6 @@
 \chapter{Robots and controllers evaluated}
-
-In this chapter, we describe the experiments conducted to validate our approach. Since this thesis is focused on using simulation to speed up hardware experiments, robot experiments form an important part of this work. Our hardware experiments are done on the ATRIAS robot on a boom. We present results on a feedback based reactively stepping controller, optimizing 5 and 9 parameters in 2 sets of experiments on hardware. 
+\label{chap:robots}
+In this chapter, we describe the experiments conducted to validate our approach. Since this thesis is focused on using simulation to speed up hardware experiments, robot experiments form an important part of this work. Our hardware experiments are done on the ATRIAS robot on a boom to make the robot planar to two dimensions. It is mounted on a pivot, so it can still fall down. We present results on a feedback based reactively stepping controller, optimizing 5 and 9 parameters in 2 sets of experiments on hardware. 
 
 Our simulation experiments are conducted on two different robot morphologies -- a planar 7-link biped model, and an ATRIAS simulation on the boom. We present two neuromuscular walking controllers -- on a 7-link biped optimizing 16 parameters, and then on an ATRIAS simulation optimizing 50 parameters.
 
@@ -12,19 +12,19 @@ We detail our robots in the next section, followed by the controllers.
 
 \subsection{The ATRIAS Robot}
 \label{sec:atrias}
-Our test platform is CMU's ATRIAS robot (Figure \ref{fig:atrias}), a human sized bipedal robot \cite{hubicki2016atrias}. The ATRIAS robot was designed so that the inertial properties of the Center of Mass of ATRIAS matched that of humans. The robot weights about $64kg$, with most of its mass concentrated around the trunk. The torso is located about $0.19m$ above the pelvis, and its rotational inertia is about $2.2 kgm^2$. The legs are 4-segment carbon-fiber linkages driven with a point foot, making the legs very light and enabling fast swing movements. The legs are actuated by 2 Series Elastic Actuators (SEAs) in the sagittal plane and a DC motor in the lateral plane. The SEAs consist of a fiberglass leaf spring attached to a geared DC motor on one end and the leg load on the other. Each spring is equipped with a load-side and motor-side encoder, which given the spring stiffness, can be used to estimate joint torques on each joint. 
+Our test platform is CMU's ATRIAS robot (Figure \ref{fig:atrias}), a human sized bipedal robot \citep{hubicki2016atrias}. The ATRIAS robot was designed so that the inertial properties of the center of mass of ATRIAS matched that of humans. The robot weights about $64kg$, with most of its mass concentrated around the trunk. The torso is located about $0.19m$ above the pelvis, and its rotational inertia is about $2.2 kgm^2$. The legs are 4-segment carbon-fiber linkages driven with a point foot, making the legs very light and enabling fast swing movements. The legs are actuated by 2 Series Elastic Actuators (SEAs) in the sagittal plane and a DC motor in the lateral plane. The SEAs consist of a fiberglass leaf spring attached to a geared DC motor on one end and the leg load on the other. Each spring is equipped with a load-side and motor-side encoder, which given the spring stiffness, can be used to estimate joint torques on each joint. 
 Although ATRIAS is capable of 3D walking, in this work, we focus on planar movements around a boom.
 %The rotational variables of the Center of Mass, such as the pitch, roll, etc. are measured through sensors attached on the boom.
 
 \subsection{A 7-link biped model}
-%\label{sec:7_link_biped}
+\label{sec:7_link_biped}
 %\begin{figure}[t]
 %    \centering
 %    \includegraphics[height=0.3\textheight]{img/7link.png}
 %    \caption{The 7-link planar biped model}
 %    \label{fig:planar_biped}
 %\end{figure}
-We also experiment with a 7-link planar human-like robot model as shown in Figure \ref{fig_nmm}. It has two legs - composed of foot, shin and thigh and a hip. There are 6 actuators at the ankle, knee and hip joints in each leg with infinite allowed torque. This model is used as a simple 2-dimensional approximation to complex humanoid robots like Sarcos. 
+We also experiment with a 7-link planar 2-dimensional human-like robot model as shown in Figure \ref{fig_nmm}. It has two legs - composed of foot, shin and thigh and a hip. There are 6 actuators at the ankle, knee and hip joints in each leg with infinite allowed torque. This model is used as a simple 2-dimensional approximation to more complex humanoid robots. 
 
 \section{Controllers tested}
 
@@ -156,7 +156,7 @@ In swing, we continually re-generate a 5th order spline that starts from the cur
 %    \label{fig:control_flow}
 %\end{figure}
 
-This controller assumes no double-stance, swing leg takes off as soon as stance is detected. This leads to a highly dynamic gait, as the contact polygon for ATRIAS in single stance is a point. It should be possible to extend this walking controller to include a double stance phase, but we leave that to future work. 
+This controller assumes no double-stance, the swing leg takes off as soon as stance is detected. This leads to a highly dynamic gait, as the contact polygon for ATRIAS in single stance is a point. It should be possible to extend this walking controller to include a double stance phase, but we leave that to future work. 
 
 The controller also depends on the desired speed of walking (as this determines the next stepping location). This means that the ``stability" of the controller depends not only on the parameters chosen, but also the desired target speed. We assume that the target speed is provided by the user and is constant in our experiments. It is possible to add the desired speed as an extra dimension to the controller and optimize controllers conditioned on this. But we leave that for future work.
 
@@ -219,61 +219,4 @@ The details of the approximate simulators are described below:
 
 A visual illustration of these approximations is shown in Figure \ref{fig:simulators}. The advantage of such an arrangement is that we can extensively test the effect of un-modelled and wrongly modelled dynamics on information transfer between simulation and hardware. Even in our high-fidelity original simulator, there are several un-modelled components of the actual hardware. For example, the non-rigidness of the robot parts, misaligned motors and relative play between joints. In our experiments, we find that the 50-dimensional VNMC is a sensitive controller, with little hope of directly transferring from simulation to hardware. Anticipating this, we can now test several methods of compensating for this mismatch using our increasingly approximate simulators. In the future, we would like to take this approximations further and study when there is useful information even in over-simplified simulations of legged systems.
 
-\section{Neural network policies on the ATRIAS biped}
 
-Another way of transferring information between simulation and hardware is to directly learn a robust policy in simulation and deploy it on hardware. We train a deep neural network policy for controlling ATRIAS in simulation with ground height disturbance and test it on hardware. We experiment with different neural network controller structures, and study their effect on transfer from simulation to hardware, without any domain randomization. We show that structured neural network controllers have a fast training rate in simulation as well as higher rate of transfer to hardware. The structure also gives the user the power to modify the controller, if required, without having to re-train the neural network from scratch.
-
-Deep reinforcement learning from scratch proved to be very challenging for a high-fidelity simulation of a bipedal robot. Deep RL methods depend on randomly exploring the space to get a notion of gradient of the cost. However, for underactuated bipedal robots most regions of space have very low reward, and hence no clear gradient. Stable walking regions in the controller space can be very narrow, making it unlikely to reach a promising controller by merely random sampling. To overcome this, we used behavior cloning to initialize our actor policy using the expert feedback-based reactive controller described in Section \ref{sec:raibert_cont}. Behavior cloning learns a policy over state-action pairs from expert trajectory by finding the policy parameters $\theta$ that solve the following maximum-likelihood optimization problem, as described in  \cite{rajeswaran2017learning}: 
-\begin{equation}
-    maximize_\theta \sum_{(s,a^*) \in \rho_D} ln \, \pi_\theta (a^*|s)
-\end{equation}
-where $\rho_D$ indicates the expert's trajectory distribution, with  $a^*$ is actions that expert took, and $s$ are the states visited.
-
-Similarly, rewards accumulated during the expert's demonstrations can be used to pre-train a Q-function by minimizing TD error \citep{sendonaris2017learning}. As the Q-function provides the guidance for policy update, a well pre-trained Q-function benefits actor training as well. 
-
-In practice, imitation learning does not guarantee that the cloned policy can work as well as the expert due to compounding error caused by distributional shift in states seen during training and testing, as described in  \cite{ross2010efficient}. Moreover, the expert controller might not perform sufficiently well in settings where it is difficult to design a controller. For example, while our expert controller is very stable on flat ground walking, rough ground seems to present a challenge. This means that the learned policy actually has to be updated to perform well in this situation, even in simulation. Nevertheless, the expert is a good initialization for the policy and makes the learning process much faster, by overcoming the need to randomly sample. We discuss two different types of neural network controllers that can be trained to obtain a better and more robust policy. 
-
-\subsection{Neural Network Policy}
-\label{NN_P}
-
-In our first setting, we create a general neural network policy without a lot of structure. Similar to the expert controller, we design the action space of the neural network to be horizontal and vertical ground  reaction forces (GRFs) $F_z$, $F_x$ and the swing leg foot place location $x_p$. The input space is the state of the CoM:  (x,$v_{act}$,$z$,$\dot{z}$,$\theta$,$\dot{\theta}$). This means that the structure of the neural network policy becomes:
-\begin{equation}
-    \pi(x,v_{act},z,\dot{z},\theta,\dot{\theta})_{NN} \rightarrow  (F_z, F_x,x_p)
-\end{equation}
-The stance and swing control pipeline is similar to the expert and shown in Figure \ref{fig:NN_process}. %he expert controller provided above can be used to pre-train the neural network policy to walk on flat ground.
-\begin{figure}[!h]
-	\centering
-	\includegraphics[width=.7\textwidth]{./img/NN.PNG}
-    \caption{Pipeline of our first neural network policy for controlling ATRIAS. Here $\tau_{RF},\tau_{RB},\tau_{LF},\tau_{LB}$ are torques in the right leg's front and back and left leg's front and back motors.}
-    \label{fig:NN_process}
-\end{figure}
-
-While this policy still has the information about dynamics constraints of the robot through the inverse dynamics and inverse kinematics blocks, it loses the well-defined structure of the expert. This means that the output of the neural network is unpredictable, and the user does not have a lot of control over the behavior of the robot. Roboticists typically prefer controllers that can be understood and predictable, as well as can be modified if needed. In our second controller, we try to emulate this shared autonomy, which lets the user control the overall behavior of the robot, and the neural network helps improve the user-designed policy through deep RL.
-
-\subsection{Neural Network in the Heuristic Policy}\label{NN_HP}
-
-In our second setting, instead of directly predicting the vertical and horizontal ground reaction force $ (F_z, F_x,x_p)$ as well as desired swing leg foot place location $x_p$, we use a neural network as part of the feedback based reactive stepping policy, described in Section \ref{sec:raibert_cont}. 
-While the original policy has a fixed desired torso lean $\theta_{des}$, desired CoM height $z_{des}$ and fixed structure for $x_p$, we learn these as a function of the state of the CoM using a neural network. The neural network now takes the state of the CoM as input, and predicts the desired torso pitch, CoM height and an offset on the footstep location.
-\begin{align}
-  \pi(x,v_{act},z,\dot{z},\theta,\dot{\theta})_{HP} \rightarrow  (\theta_{NN}, z_{NN},x_{NN}) 
-\end{align}
-
-When inserted into the expert controller, this gives a structured neural network policy, where neural network outputs are used as part of a heuristic policy. It is worth noting that this policy is capable of generating the same outputs as the general neural network policy. For example, for any desired $F_{x}$ profile, it is always possible to find a $\theta_{NN}$ given $K_{pt}$, $K_{dt}$, $\theta$ and $\dot{\theta}$. The pipeline is illustrated in Figure \ref{fig:H_process}.
-
-\begin{align}
-F_x = K_{pt}(\theta_{NN} - \theta) + K_{dt}(-\dot{\theta}) \\
-F_z = K_{pz}(z_{NN}-z) + K_{dz}( - \dot{z}) \\
-x_p=k(v_{act}-v_{tgt}) + 0.5 \cdot v \cdot T + x_{NN}\label{x_p eq}
-\end{align}
-
-
-\begin{figure}[!h]
-	\centering
-	\includegraphics[width=.7\textwidth]{./img/Heuristic.PNG}
-    \caption{Pipeline of our second neural network controller using a heuristic structure and neural network outputs for controlling ATRIAS. }
-    \label{fig:H_process}
-\end{figure}
-
-There are several benefits to having such structure in our policies. First and foremost, the user can predict the behavior and understand the outputs of this policy. This is important for policies implemented on robots to ensure safety of the robot and its environment. 
-%For example, controllers that use on inverse dynamics take torque constraints and other dynamics constraints into account. 
-Moreover, if the user wants to test a slightly different setting than the simulation, she can easily tune other parameters of this policy, keeping the neural network fixed. Lastly, if the policy fails on hardware, it is easy for the user to understand why that might be, and even possible to fix other parts of the controller without re-training the neural network.
