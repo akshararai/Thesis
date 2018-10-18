@@ -27,10 +27,12 @@ Feature transforms $\phi(\pmb{x})$ from simulation for a given controller $\pmb{
     \pmb{t}_{ij} \!=\! \phi(\pmb{x}_i) \!-\! \phi(\pmb{x}_j) \\
     k_{\phi}(\pmb{x}_i, \pmb{x}_j) = \sigma_k^2 \exp\Big(- \tfrac{1}{2} \pmb{t}_{ij}^T  \diag(\pmb{\ell})^{\!-\!2} \pmb{t}_{ij} \Big)
 \end{align}
+
+
 Note that the functional form above is same as that of Squared Exponential kernel, if considered from the point of view of the transformed space, with $\phi(\pmb{x})$ as input. While this kernel is stationary as a function of $\phi$, it is non-stationary in $\pmb{x}$. $\phi$ can bring closer related parts of the space that would be otherwise far apart in the original space. BO can then operate in the space of $k_{\phi}$, which is `informed' by simulation.
 
 \subsection{A bipedal locomotion specific transform}
-
+\label{sec:dog_transform}
 The proposed locomotion feature transform is a generalization of the Determinants of Gaits (DoG) used by physiotherapists to evaluate the quality of human walking \citep{inman1953major}. We modify these features to look at the following aspects of bipedal walking:
 
 \begin{enumerate}
@@ -83,7 +85,7 @@ A small but useful addition could be to learn the weights for a 4-dimensional fe
 
 
 \subsection{A feature transform from learned data}
-
+\label{sec:nn_transform}
 While hand-designed feature transforms can be very data-efficient, as well as shed light on what the optimization is prioritizing, they are not ideal for situations where such information is not available. In this section, we automatically learn an informed transform for optimizing bipedal locomotion controllers without extensive domain-expertise. We start by running short simulations in a high-fidelity simulator for the locomotion controller of interest. 
 We run simulations for a large grid of parameter sets and record the resulting costs and simulation trajectories. Costs obtained during short simulations serve as approximate indicators of the quality of the controller parameters for longer simulations, though they can diverge later. Our idea is to use the behaviors obtained from simulation to generate an informed distance metric for the Bayesian optimization kernel. 
 
@@ -254,15 +256,13 @@ Let's construct kernel $k^{v_2}_{\phi_{adj}}(\pmb{x}_i, \pmb{x}_j)$ that uses th
 \end{split}
 \end{equation*}
 
-\begin{equation*}
-\begin{split}
+\begin{align*}
 k^{v_2}_{\phi_{adj}}(\pmb{x}_i, \pmb{x}_j) &= \sigma^2_{k_{v_0}} \exp\Big(- \tfrac{1}{2} (\pmb{q}_{ij}^{adj})^T \diag(\pmb{\ell})^{\!-\!2} \pmb{q}_{ij}^{adj} \Big) \\
 & = \sigma^2 \exp\Big(- \tfrac{1}{2} \big[ (\pmb{v}_{\phi} + \pmb{v}_{g})^T \diag(\pmb{\ell})^{\!-\!2} (\pmb{v}_{\phi} + \pmb{v}_{g}) \big] \Big) \\
 & = \sigma^2
 \exp\Big(- \tfrac{1}{2} \big[ \pmb{v}_{\phi}^T \diag(\pmb{\ell})^{\!-\!2} \pmb{v}_{\phi} + \pmb{v}_{g}^T\diag(\pmb{\ell})^{\!-\!2} \pmb{v}_{g} + prod_{ij} \big] \Big)\\
 &\quad \quad \quad \quad \quad \text{where } prod_{ij} = 2 \pmb{v}_{\phi}^T\diag(\pmb{\ell})^{\!-\!2} \pmb{v}_{g}
-\end{split}
-\end{equation*}
+\end{align*}
 
 Using $\exp(a+b+c)=\exp(c) \cdot \exp(a+b)$,  we have:
 \begin{align*}
@@ -308,7 +308,7 @@ As shown in the figure, fewer trials are needed to reliably reach walking contro
 
 \begin{figure}
     \centering
-    \includegraphics[width = 0.8\textwidth]{img/contexxt_bo.png}}
+    \includegraphics[width = 0.8\textwidth]{img/contexxt_bo.png}
     \caption{Transfer learning with contextuan bayesian optimization can be used to transfer knowledge between different target speeds. Initial speeds of $[0.5, 1.0, 1.5]m/s$ were simulated for 10 trials while latter speeds of $[0.75, 1.25, 0.25, 1.75] m/s$ were simulated for 5 trials. The latter speeds reach a mean cost of $11.96$ after 5 trials, as compared to a mean cost of $19.61$ for the initial target speeds.}
     \label{fig:context}
 \end{figure}
