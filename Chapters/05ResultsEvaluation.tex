@@ -1,4 +1,4 @@
-\chapter{Experiments with feature transforms from simulation}
+\chapter{Experiments with features from simulation}
 \label{chap:expts}
 
 We now present our experiments to evaluate the different ways of transferring information from simulation to hardware described in the previous sections. We start by describing hardware experiments with feature transforms, followed by simulation experiments that study the effect of inaccurate simulations. 
@@ -84,7 +84,7 @@ Based on these results, we concluded that BO with \dogkernel was indeed able to 
 
 \label{sec:exps_sim}
 
-To facilitate further experiments we used the ATRIAS simulator from ~\cite{martin2015robust} with modeling disturbances and a variable target speed profile of $0.4 m/s \text{ (15 steps)} - 0.6 m/s \text{ (15 steps)} - 1.0 m/s \text{ (15 steps)} - 0.6 m/s \text{ (15 steps)} - 0.2 m/s \text{ (5 steps)}$. For these experiments, we use the 9-dimensional controller described in \ref{sec:raibert_cont} as this proved to be a more challenging setting for the ATRIAS hardware. Masses of the robot torso, legs, the boom, as well as inertia of the torso were perturbed randomly by up to 15\% of their original values during optimization. This ensured a mismatch between the setting used to generate the kernel and the experimental setting for evaluating its performance, aimed at capturing the discrepancy between hardware and simulation. Note that the kernel was generated on the unperturbed setting, with parameters as described in Section \ref{sec:atrias} for a target speed of $0.5m/s$. The grid size for DoG scores was 100,000 points, and simulations were run for $5s$.
+To facilitate further experiments we used the ATRIAS simulator from ~\cite{martin2015robust} with modeling disturbances and a variable target speed profile of $0.4 m/s \text{ (15 steps)} - 0.6 m/s \text{ (15 steps)} - 1.0 m/s \text{ (15 steps)} - 0.6 m/s \text{ (15 steps)} - 0.2 m/s$ $\text{ (5 steps)}$. For these experiments, we use the 9-dimensional controller described in \ref{sec:raibert_cont} as this proved to be a more challenging setting for the ATRIAS hardware. Masses of the robot torso, legs, the boom, as well as inertia of the torso were perturbed randomly by up to 15\% of their original values during optimization. This ensured a mismatch between the setting used to generate the kernel and the experimental setting for evaluating its performance, aimed at capturing the discrepancy between hardware and simulation. Note that the kernel was generated on the unperturbed setting, with parameters as described in Section \ref{sec:atrias} for a target speed of $0.5m/s$. The grid size for DoG scores was 100,000 points, and simulations were run for $5s$.
 
 The cost used for these experiments was
 \begin{equation}
@@ -133,7 +133,7 @@ For the 5-dimensional and 9-dimensional controllers, the performance during shor
 
 %The 50-dimensional controller has not been fully implemented to work on hardware yet due to lack of time. However, our experiments on other controllers so far seem promising and we are working towards a hardware implementation. 
 %\RA{describe current progress and interest in this controller being ultimately used on hw ~\ref{van2015experimental}}
-To anticipate potential mismatch between simulation and hardware, we tested it on slightly perturbed initial conditions for the VNMC. The different conditions were aimed to replicate issues likely to be seen on hardware. The starting states for VNMC would differ slightly each time, since they would depend on the state of the robot after the 5-dimensional initiating controller has finished. Both DoG and adjusted DoG were robust to slight changes in initial condition. 
+%To anticipate potential mismatch between simulation and hardware, we tested it on slightly perturbed initial conditions for the VNMC. The different conditions were aimed to replicate issues likely to be seen on hardware. The starting states for VNMC would differ slightly each time, since they would depend on the state of the robot after the 5-dimensional initiating controller has finished. Both DoG and adjusted DoG were robust to slight changes in initial condition. 
 
 It would be interesting to study the effect of a mismatch map on performance on hardware. While essentially a mismatch map adds more parameters to learn, which would result in a slower optimization, if initialized properly with domain knowledge, it might help. The \dogkernel samples a few unstable points in the start of the 50-dimensional optimization, as these have high DoG scores on short simulations, but still might fall in longer simulations under disturbances. Since a lot of the 50-dimensional space is clustered around each DoG score, its an over-condensation of the space. A lot of potentially good points get rejected because one of the points falls. If we detect a mismatch at the high DoG point that fell, and effectively increase its distance to other high DoG points, we will help speed up the optimization.
 
@@ -184,7 +184,7 @@ When reporting results, we plot the best results found in this easier setting as
 
 All the experiments described below are done for 50 independent runs, each with a unique set of modeling disturbances and a different ground profile for rough ground walking. Each run  consists of 100 trials or cost function evaluations, in which the optimization algorithm evaluates a parameter set for 100 seconds of simulation. Note that the disturbances and ground profiles remain constant across each run (100 trials).
 
-\subsubsection{Experiments on the smooth cost function}
+\subsubsection{Experiments with the smooth cost function}
 
 \begin{figure}[t]
 \centering
@@ -289,11 +289,6 @@ For our experiments on the ATRIAS robot we used a high-fidelity ATRIAS simulator
 %Then we conducted a set of hardware experiments on the ATRIAS robot using a controller described in Section~\ref{sec:probform}. 
 We constructed a distance metric for a kernel used in Bayesian Optimization by training a neural network to reconstruct cost obtained from short simulations. We created a sobol grid on the input parameter space with 20000 points and ran short 3.5 second simulations on each of the corresponding 20000 parameter sets to compute the costs. We then used a fully connected network with 4 hidden layers (128, 64, 16, 4 units) with L1 loss to reconstruct the transformation of the cost described in Section~\ref{sec:approach_asym}.
 
-
-We sampled 100 random controllers with a target speed of $0.4m/s$ on hardware, and 16 controllers walked. A lower target speed meant that $\frac{1}{6}$ of the controller space was stable walking controllers. We completed 6 sets of runs of BO: 3 using \textit{asymNN} kernel and 3 using a standard SE kernel with 10 trials each, leading to a \mbox{total of 60 hardware experiments}. Figure~\ref{fig:bo_runs_plot_atrias_hw} shows the performance of BO with SE versus \textit{asymNN} kernel. SE obtains a stable walking solution on the 3rd trial in one run, and on the 4th trial in the two other runs. \textit{asymNN} kernel is able to find the best-performing set of parameters on the second trial in each of the 3 runs. This confirms that using \textit{asymNN} kernel offers an improvement over using SE kernel in this setting. We suggest that \textit{asymNN} reliably selects a successful point on the 2nd trial  because such points lie far from  poorly performing subspace of parameters (under the distance metric constructed with \textit{asymNN}). 
-
-While both SE kernel and \textit{asymNN} kernels perform very well in this setting, the \textit{asymNN} kernel is more biased towards sampling stable points than the SE kernel, as shown in Figure \ref{fig:bo_runs_plot_atrias_hw}. In the three runs, \textit{asymNN} kernel samples 23 stable controllers out of 30, while SE kernel samples 15 stable controllers. This implies that the search for optimal controllers is biased towards safety in the case of \textit{asymNN} kernel. This is desirable as stable points are less likely to break the robot.
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.43\textwidth]{img/hdw_runs.png}
@@ -303,7 +298,13 @@ While both SE kernel and \textit{asymNN} kernels perform very well in this setti
 \label{fig:bo_runs_plot_atrias_hw}
 \end{figure}
 
-On a more challenging, variable target speed profile of $0.4 m/s$ $\text{ (15 steps)} - 1.0 m/s \text{ (15 steps)} - 0.2 m/s \text{ (15 steps)} - 0 m/s \text{ (5 steps)}$, the performance of the \textit{asymNN} kernel is slightly worse than the \dogkernel, though still better than SE kernel. Figure \ref{fig:bo_nn_all_3} shows BO with  \textit{asymNN} kernel, SE kernel and \dogkernel for the variable speed profile. \dogkernel can find walking controllers in 2 trials in all 3 runs, while it takes \textit{asymNN} kernel 5 trials. On the other hand, SE kernel fails to reliably find controllers even after 20 trials.
+We sampled 100 random controllers with a target speed of $0.4m/s$ on hardware, and 16 controllers walked. A lower target speed meant that $\frac{1}{6}$ of the controller space was stable walking controllers. We completed 6 sets of runs of BO: 3 using \textit{asymNN} kernel and 3 using a standard SE kernel with 10 trials each, leading to a \mbox{total of 60 hardware experiments}. Figure~\ref{fig:bo_runs_plot_atrias_hw} shows the performance of BO with SE versus \textit{asymNN} kernel. SE obtains a stable walking solution on the 3rd trial in one run, and on the 4th trial in the two other runs. \textit{asymNN} kernel is able to find the best-performing set of parameters on the second trial in each of the 3 runs. This confirms that using \textit{asymNN} kernel offers an improvement over using SE kernel in this setting. We suggest that \textit{asymNN} reliably selects a successful point on the 2nd trial  because such points lie far from  poorly performing subspace of parameters (under the distance metric constructed with \textit{asymNN}). 
+
+While both SE kernel and \textit{asymNN} kernels perform very well in this setting, the \textit{asymNN} kernel is more biased towards sampling stable points than the SE kernel, as shown in Figure \ref{fig:bo_runs_plot_atrias_hw}. In the three runs, \textit{asymNN} kernel samples 23 stable controllers out of 30, while SE kernel samples 15 stable controllers. This implies that the search for optimal controllers is biased towards safety in the case of \textit{asymNN} kernel. This is desirable as stable points are less likely to break the robot.
+
+
+
+On a more challenging, variable target speed profile of $0.4 m/s \text{ (15 steps)} - 1.0 m/s$ $\text{ (15 steps)} - 0.2 m/s \text{ (15 steps)} - 0 m/s \text{ (5 steps)}$, the performance of the \textit{asymNN} kernel is slightly worse than the \dogkernel, though still better than SE kernel. Figure \ref{fig:bo_nn_all_3} shows BO with  \textit{asymNN} kernel, SE kernel and \dogkernel for the variable speed profile. \dogkernel can find walking controllers in 2 trials in all 3 runs, while it takes \textit{asymNN} kernel 5 trials. On the other hand, SE kernel fails to reliably find controllers even after 20 trials.
 
 \begin{figure}
     \centering
@@ -466,6 +467,8 @@ Smooth cost \\
 \label{tbl:nn_expts_details}
 \end{table}
 
+\pagebreak
+
 \section{Effect of inaccurate simulations on the performance}
 
 \label{subsec:mismatch_experiments}
@@ -502,7 +505,7 @@ In the rest of this section, we provide experimental analysis of settings with i
 \end{figure} 
 First, we examine the performance of our proposed approaches with informed kernels: $k_{DoG}$, $k_{\text{trajNN}}$ and $k_{DoG_{adj}}$. Figure~\ref{fig:compare_gear_dynamics} shows the case when informed kernels are generated using inaccurate dynamics models, as described in Section \ref{sec:mismatch}. The first approximate simulator has simplified gear dynamics while BO is run on the original simulator. The second approximation removes the boom of the robot and simulates a purely 2-dimensional robot.
 
-When kernel is generated in simulator with approximate gear dynamics, all runs with informed kernels find walking solutions in 50 trials, while for SE only $70\%$ of the runs have walking solutions.
+When kernel is generated in simulator with approximate gear dynamics, all runs with informed kernels find walking solutions in 50 trials, while for SE only $70\%$ of the runs have walking solutions (Figure \ref{fig:compare_gear_dynamics}).
 
 Next, Figure~\ref{fig:compare_without_boom} shows performance of $k_{DoG}$, $k_{\text{trajNN}}$ and $k_{DoG_{adj}}$ when the kernels are constructed using a simulator with simplified dynamics and without a the boom. In this case the mismatch with the original simulator is larger than before and we see the advantage of using adjustment for DoG-based kernel: $k_{DoG_{adj}}$ finds walking points in all runs after 35 trials. $k_{\text{trajNN}}$ also achieves this, but after 50 trials. $k_{DoG}$ finds walking points in $\approx\!90\%$ of the runs after 50 trials. The performance of SE stays the same, as it uses no prior information from any simulator.
 
@@ -512,6 +515,12 @@ This illustrates that while the original DoG-based kernel can recover from sligh
 \subsubsection{Comparisons of Prior-based and Kernel-based Approaches}
 \label{subsec:sim_experiments_prior_cully}
 We will classify approaches that use simulation information in hardware optimization as prior-based or kernel-based. Prior-based approaches use costs from the simulation in the prior of the GP used in the BO. This can help BO a lot if the costs between simulation and hardware transfer, and the cost function is fixed. However, in the presence of large mismatch, points that perform well in simulation might fail on hardware. A prior-based method can be biased towards sampling promising points from simulation, resulting in an even poorer performance than methods with no prior. Kernel-based approaches consist of methods that incorporate the information from simulation into the kernel of the GP. These can be sample-inefficient as compared to prior-based method, but less likely to be biased towards unpromising regions in the presence of mismatch. They also easily generalize to multiple costs, so that there is no additional computation if the cost is changed. This is important because a lot of these approaches can take several days of computation to generate the informed kernel. For example, \cite{cully2015robots} report taking 2 weeks on a 16-core computer to generate their map. 
+
+It is possible to also combine both prior-based and kernel-based methods, as in \cite{cully2015robots}. We will classify these as `prior-based' methods, since in our experiments prior outweighs the kernel effects for such cases. In our comparison with \cite{cully2015robots}, we will implement a version with and without the prior points. We do not add a cost prior to BO using DoG-based kernel, as this limits us to a particular cost, and high-fidelity simulators. Since both of these can be major obstacles in real robot experiments, we refrain from doing so.
+
+
+Figure~\ref{fig:cost_prior_sim_versions} shows the performance when using simulation cost in the prior during BO, and learning a model for the difference between simulation and hardware costs \citep{wilson2014using}. BO with a cost prior created using the original version of the simulator illustrates what would happen in the best case scenario, as optimization is merely a look-up here. When the simulator with simplified gear dynamics is used for constructing the prior, we observe significant improvements over uninformed BO prior. However, when the prior is constructed from simplified gear dynamics and no boom setting, the approach performs slightly worse than uninformed BO. This shows that while an informed prior can be very helpful when created from a simulator close to hardware, it can hurt performance if simulator is significantly different from hardware. 
+
 \begin{figure}[t]
 \begin{subfigure}[t]{0.47\textwidth}
 \centering
@@ -530,11 +539,19 @@ We will classify approaches that use simulation information in hardware optimiza
 \label{fig:prior_based_bo}
 \end{figure}
 
-It is possible to also combine both prior-based and kernel-based methods, as in \cite{cully2015robots}. We will classify these as `prior-based' methods, since in our experiments prior outweighs the kernel effects for such cases. In our comparison with \cite{cully2015robots}, we will implement a version with and without the prior points. We do not add a cost prior to BO using DoG-based kernel, as this limits us to a particular cost, and high-fidelity simulators. Since both of these can be major obstacles in real robot experiments, we refrain from doing so.
 
 
-Figure~\ref{fig:cost_prior_sim_versions} shows the performance when using simulation cost in the prior during BO, and learning a model for the difference between simulation and hardware costs \citep{wilson2014using}. BO with a cost prior created using the original version of the simulator illustrates what would happen in the best case scenario, as optimization is merely a look-up here. When the simulator with simplified gear dynamics is used for constructing the prior, we observe significant improvements over uninformed BO prior. However, when the prior is constructed from simplified gear dynamics and no boom setting, the approach performs slightly worse than uninformed BO. This shows that while an informed prior can be very helpful when created from a simulator close to hardware, it can hurt performance if simulator is significantly different from hardware. 
 
+Next, we discuss experiments with our implementation of Intelligent Trial and Error (IT\&E) algorithm from~\citet{cully2015robots}. This algorithm combines adding a cost prior from simulated evaluations with adding simulation information into the kernel. IT\&E defines a behavior metric and tabulates best performing points from simulation on their corresponding behavior score. The behavior metric used in our experiments is duty-factor of each leg, which can go from 0 to 1.0. We discretize the duty factor into 21 cells of 0.05 increments, leading to a $21\times21$ grid. We collect the 5 highest performing controllers for each square in the behavior grid, creating a $21\times21\times5$ grid. Next, we generate 50 random combinations of a $21\times21$ grid, selecting 1 out of the 5 best controllers per grid cell. Care was taken to ensure that all 5 controllers had comparable costs in the simulator used for creating the map. 
+Cost of each selected controller is added to the prior and BO was performed in the behavior space, like in \cite{cully2015robots}.
+
+Figure~\ref{fig:cully_prior_sim_versions} shows BO with IT\&E constructed using different versions of the simulator. \mbox{IT\&E} constructed using simplified gear dynamics simulator is slightly less sample-efficient than the straightforward `cost prior' approach. When constructed with the simulator with no boom, \mbox{IT\&E} is able to improve over uninformed BO. However, it only finds walking points in 77\% of the runs in 50 trials in  this case, as some of the generated maps contained no controllers that could walk on the `hardware'. This is a shortcoming of the IT\&E algorithm, as it eliminates a very large part of the search space and if the pre-selected space does not contain a walking point, no walking controllers can be sampled with BO. This problem could possibly be avoided by using a finer grid, or a different behavior metric. However tuning such hyper-parameters can turn out to be expensive, in computation and hardware experiment time.
+ 
+
+
+To separate the effects of using simulation information in prior mean vs kernel, we evaluated a kernel-only version of \mbox{IT\&E} algorithm. Figure~\ref{fig:cully_kernel_sim_versions} shows these results. It shows that the cost prior is crucial for the success of IT\&E and performance deteriorates without it. Hence, it is not practical to use IT\&E on a cost different than what it was generated for.
+
+Nonetheless, Figure~\ref{fig:compare_dog} showed that BO with adjusted DoG kernel is able to handle both moderate and severe mismatch with kernel-only information, collected in  Figure~\ref{fig:kernel_hwadjust2_sim_versions}.
 
 \begin{figure}[t]
 \begin{subfigure}[t]{0.47\textwidth}
@@ -553,18 +570,6 @@ Figure~\ref{fig:cost_prior_sim_versions} shows the performance when using simula
 \caption{\small{BO using kernel-based approaches. Mean over 50 runs for each algorithm, 95\% CIs.}}
 \label{fig:prior_based_bo}
 \end{figure}
-
-
-Next, we discuss experiments with our implementation of Intelligent Trial and Error (IT\&E) algorithm from~\citet{cully2015robots}. This algorithm combines adding a cost prior from simulated evaluations with adding simulation information into the kernel. IT\&E defines a behavior metric and tabulates best performing points from simulation on their corresponding behavior score. The behavior metric used in our experiments is duty-factor of each leg, which can go from 0 to 1.0. We discretize the duty factor into 21 cells of 0.05 increments, leading to a $21\times21$ grid. We collect the 5 highest performing controllers for each square in the behavior grid, creating a $21\times21\times5$ grid. Next, we generate 50 random combinations of a $21\times21$ grid, selecting 1 out of the 5 best controllers per grid cell. Care was taken to ensure that all 5 controllers had comparable costs in the simulator used for creating the map. 
-Cost of each selected controller is added to the prior and BO was performed in the behavior space, like in \cite{cully2015robots}.
-
-Figure~\ref{fig:cully_prior_sim_versions} shows BO with IT\&E constructed using different versions of the simulator. \mbox{IT\&E} constructed using simplified gear dynamics simulator is slightly less sample-efficient than the straightforward `cost prior' approach. When constructed with the simulator with no boom, \mbox{IT\&E} is able to improve over uninformed BO. However, it only finds walking points in 77\% of the runs in 50 trials in  this case, as some of the generated maps contained no controllers that could walk on the `hardware'. This is a shortcoming of the IT\&E algorithm, as it eliminates a very large part of the search space and if the pre-selected space does not contain a walking point, no walking controllers can be sampled with BO. This problem could possibly be avoided by using a finer grid, or a different behavior metric. However tuning such hyper-parameters can turn out to be expensive, in computation and hardware experiment time.
- 
-
-
-To separate the effects of using simulation information in prior mean vs kernel, we evaluated a kernel-only version of \mbox{IT\&E} algorithm. Figure~\ref{fig:cully_kernel_sim_versions} shows these results. It shows that the cost prior is crucial for the success of IT\&E and performance deteriorates without it. Hence, it is not practical to use IT\&E on a cost different than what it was generated for.
-
-Nonetheless, Figure~\ref{fig:compare_dog} showed that BO with adjusted DoG kernel is able to handle both moderate and severe mismatch with kernel-only information, collected in  Figure~\ref{fig:kernel_hwadjust2_sim_versions}.
 
 In summary, we created two simulators with increasing modelling approximations, and studied the effect of using these to aid optimization on the original simulator. We found that while methods that use cost in the prior of BO can be very sample-efficient in low mismatch, their performance worsens as mismatch increases. \mbox{IT\&E} introduced in \cite{cully2015robots} uses simulation information in both prior mean and kernel, and is very sample-efficient in cases of low mismatch. Even with high mismatch, it performs better than just prior-based BO but doesn't find walking controllers reliably. In comparison, adjusted DoG-based kernel performed well in all the tested scenarios. All of this shows that the adjusted DoG-based kernel can reliably improve sample-efficiency of BO even when the mismatch between simulation and hardware is high. We would like to continue working in this direction and explore the usefulness of even simpler simulators in the future.
 

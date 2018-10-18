@@ -103,7 +103,7 @@ The first set of simulation experiments were with the Neural Network Policy (NN 
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=.55\textwidth]{./img/NN_walking.png}
+	\includegraphics[width=.85\textwidth]{./img/NN_walking.png}
     \caption{Sequence of frames from a single walking cycle (left to right). }
     \label{fig:NN_walking}
 \end{figure}
@@ -114,7 +114,7 @@ As shown in the plot, the reward keeps growing as training goes on, starting fro
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=.65\textwidth]{img/NN_walking_2.png}
+	\includegraphics[width=.85\textwidth]{img/NN_walking_2.png}
     \caption{A time lapse of Neural Network Policy walking around the boom with ground height disturbance in simulation. }
     \label{fig:NN_walking_2}
 \end{figure}
@@ -166,3 +166,6 @@ There is a large mismatch between simulation and hardware starting conditions fo
 Secondly, since the structure of the policy is readable by an expert, the expert can still edit the policy after being trained in simulation. For example, if the NN was trained on a lower velocity but the expert wanted to run the robot on a higher velocity, the heuristic structure allows to directly edit this target. Similarly, we observed that some of our controllers were falling because of speeding, and we increased the feedback gain $k$ on velocity feedback, described in Equation \ref{x_p eq}. This modification significantly improved the success rate of policies learned in simulation on hardware.
 
 These experiments highlight the advantages of structure in learned policies. While the NN helped us improve our heuristic policy, as shown in Figure \ref{fig:Reward}, by learning a state-dependant desired height, pitch and footstep location, it also kept the intuitive structure of the heuristic. So, it was able to better reject disturbances between simulation and hardware, as well as be modified for slightly different test situations, without needing re-learning. This allowed a \textbf{$80\%$} rate of transfer of learned policies between simulation and hardware.
+
+
+As a side note, other factors such as cost can influence the rate of transfer to hardware as well. In our hardware setup, the initial condition in simulation and hardware was very different, which led to a lot of controllers failing on hardware. One way of learning more robust policies to such disturbances can be to use cost functions that encourage conservative controllers. We conducted such experiments with a cost that penalized high torques and found that the transfer improved to a $100\%$ for NN policy with heuristic structure. In general, it is worth studying control frameworks that can switch between conservative and high performing controllers, based on the mismatch between simulation and hardware. For example, we might want to start with a conservative controller, and then transition to a high-performance controller once we have achieved a cyclic gait. We leave this for future work.
