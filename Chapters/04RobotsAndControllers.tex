@@ -1,10 +1,10 @@
 \chapter{Robots and controllers evaluated}
 \label{chap:robots}
-In this chapter, we describe the experiments conducted to validate our approach. Since this thesis is focused on using simulation to speed up hardware experiments, robot experiments form an important part of this work. Our hardware experiments are done on the ATRIAS robot on a boom to make the robot planar to two dimensions. It is mounted on a pivot, so it can still fall down. We present results on a feedback based reactively stepping controller, optimizing 5 and 9 parameters in 2 sets of experiments on hardware. 
+In this chapter, we describe the experimental setup conducted to validate our approach. Since this thesis is focused on using simulation to speed up hardware experiments, robot experiments form an important part of this work. Our hardware experiments are done on the ATRIAS robot on a boom. It is mounted on a pivot to planarize the robot to two dimensions, but it can still fall down. We present results on a feedback based reactively stepping controller, optimizing 5 and 9 parameters in 2 sets of experiments on hardware. 
 
-Our simulation experiments are conducted on two different robot morphologies -- a planar 7-link biped model, and an ATRIAS simulation on the boom. We present two neuromuscular walking controllers -- on a 7-link biped optimizing 16 parameters, and then on an ATRIAS simulation optimizing 50 parameters.
+Our simulation experiments are conducted on two different robot morphologies -- a planar 7-link biped model, and an ATRIAS simulation on the boom. We present two neuromuscular walking controllers -- on a 7-link biped optimizing 16 parameters, and then on an ATRIAS simulation optimizing 50 parameters. We also build inaccurate simulations of ATRIAS and test the effect of increasing mismatch between simulation and hardware on performance on Bayesian optimization.
 
-In addition, we present experiments on learning neural network policies using deep reinforcement learning. These policies are learned in simulation and deployed on the ATRIAS biped.
+In addition, we present experiments on learning neural network policies using deep reinforcement learning. These policies are learned in ATRIAS simulation and deployed on the ATRIAS biped.
 
 We detail our robots in the next section, followed by the controllers. 
 
@@ -119,7 +119,7 @@ Though originally developed for explaining human neural control pathways, these 
 The large number of trials make it impossible to implement CMA-ES on a real robot. This is a shortcoming because often we find that after training the policies in simulation, they do not transfer well to the real robot, due to differences between simulation and real hardware. We aim to overcome this problem by using Bayesian Optimization with informed feature transforms for optimizing controllers.
 %In the following sections, we will develop a sample efficient method for training the same controller. 
 
-The neuromuscular controller is a model-free controller. It does not need the exact dynamics of the robot to generate torques. The dynamics are inherently embedded in the learned parameters of the controller. As a result, the same controller can be used on very different robots without any modification to the policy structure. 
+The neuromuscular controller is a model-free controller. It does not need the exact dynamics of the robot to generate torques. The dynamics are inherently embedded in the learned parameters of the controller. As a result, the same controller can be used on very different robots without any modification to the policy structure. We later show a very similar controller implemented on the ATRIAS bipedal robot.
 
 We next describe a model-based reactively stepping controller. This controller uses the dynamics models of the robot to generate torques. Hence, to transfer to new systems, the dynamics need to be updated.
 
@@ -170,6 +170,10 @@ The controller also depends on the desired speed of walking (as this determines 
 \subsection{Virtual Neuromuscular Controller for ATRIAS}
 \label{sec:VNMC_cont}
 
+% P1 - summary
+We adapt a previously proposed virtual neuromuscular controller (VNMC) \cite{batts2015toward} adapted for ATRIAS. VNMC maps a neuromuscular model to the robot's topology and emulates it to generate desired motor torques, which is sent to the SEA controller (Figure \ref{fig:VNMC}).
+The emulated neuromuscular model, which is originally developed to study human locomotion, consists of primarily spinal reflexes, and with appropriate sets of control parameters, it generates diverse human locomotion behaviors \cite{song2015neural}, such as walk, run,turn, walk up stairs, etc. The VNMC control consists of 6 muscles on each leg - the hip flexors (HFL), the glutei (GLU), the hamstrings (HAM), the rectus femoris (RF), the vastii (VAS) and the biceps femoris (BFSH). Since ATRIAS doesn't have any ankles, these muscles are removed from the model. The feedbacks are similar to the ones described in \ref{sec:NMC}, and details can be found in \cite{song2015neural}.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.6\textwidth]{img/VNMC.png}
@@ -178,10 +182,6 @@ VNMC maps the robot's state, $(v, \theta, \varphi, \hat{\tau}_f, \hat{\tau}_b)$,
 The virtual neuromuscular model (in the gray box) outputs virtual joint torques, $(\tau_{v,1}, \tau_{v,2})$, that are mapped to desired robot joint torques, $(\tau_f, \tau_b)$, which are tracked by the SEA controller.}}
 \label{fig:VNMC}
 \end{figure}
-
-% P1 - summary
-We adapt a previously proposed virtual neuromuscular controller (VNMC) \cite{batts2015toward} adapted for ATRIAS. VNMC maps a neuromuscular model to the robot's topology and emulates it to generate desired motor torques, which is sent to the SEA controller (Figure \ref{fig:VNMC}).
-The emulated neuromuscular model, which is originally developed to study human locomotion, consists of primarily spinal reflexes, and with appropriate sets of control parameters, it generates diverse human locomotion behaviors \cite{song2015neural}, such as walk, run,turn, walk up stairs, etc. The VNMC control consists of 6 muscles on each leg - the hip flexors (HFL), the glutei (GLU), the hamstrings (HAM), the rectus femoris (RF), the vastii (VAS) and the biceps femoris (BFSH). Since ATRIAS doesn't have any ankles, these muscles are removed from the model. The feedbacks are similar to the ones described in \ref{sec:NMC}, and details can be found in \cite{song2015neural}.
 
 % P2 - improvements from previous version
 For this study, we adapt the previous VNMC \cite{batts2015toward} by removing some unnecessary biological components while preserving its basic functionalities.
@@ -201,6 +201,13 @@ Unlike domain-randomization, from \cite{mordatch2015ensemble}, instead of traini
 \subsection{Incorrect dynamics models}
 In this setting, the high-fidelity ATRIAS simulator~\citep{martin2015robust}, is the \textit{simulated ``hardware"}. We make dynamics approximations to the original simulator, which are used commonly in simulators to decrease fidelity and increase simulation speed. For example, the complex dynamics of harmonic drives are approximated as a torque multiplication, and the boom is removed from the simulation, leading to a two-dimensional simulator. These approximate simulators now become the \textit{simulated ``simulators"}. As the approximations in these simulators are increased, we expect the performance of methods that utilize simulation for optimization on hardware to deteriorate.
 
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\textwidth]{img/atrias_gear_boom_simplification.png}
+    \caption{Different fidelity simulators for ATRIAS. The original simulator (left) is very high-fidelity with complex gear and boom dynamics. The second simulator (middle) has an approximate gear dynamics model and the third simulator (right) simulates a 2-dimensional robot without boom or gear dynamics.}
+    \label{fig:simulators}
+\end{figure}
+
 The details of the approximate simulators are described below:
 
 \begin{enumerate}
@@ -209,13 +216,6 @@ The details of the approximate simulators are described below:
     \item \textbf{Simulation with no boom and simplified gear dynamics} : The ATRIAS robot walks on a boom in our hardware experiments. The boom leads to lateral torques on the robot, which have vertical and horizontal force components that need to be considered in a realistic simulation of the robot. In our second approximation, we remove the boom from the original simulator and constraint the motion of the robot to a 2-dimensional plane, making a truly two-dimensional simulation of ATRIAS. This is a common approximation for two-dimensional robots. Since this approximation has both simplified gear dynamics and no boom, it is further from the original simulator than the first approximation.
 
 \end{enumerate}
-
-\begin{figure}
-    \centering
-    \includegraphics[width = 0.8\textwidth]{img/atrias_gear_boom_simplification.png}
-    \caption{Different fidelity simulators for ATRIAS. The original simulator (left) is very high-fidelity with complex gear and boom dynamics. The second simulator (middle) has an approximate gear dynamics model and the third simulator (right) simulates a 2-dimensional robot without boom or gear dynamics.}
-    \label{fig:simulators}
-\end{figure}
 
 A visual illustration of these approximations is shown in Figure \ref{fig:simulators}. The advantage of such an arrangement is that we can extensively test the effect of un-modelled and wrongly modelled dynamics on information transfer between simulation and hardware. Even in our high-fidelity original simulator, there are several un-modelled components of the actual hardware. For example, the non-rigidness of the robot parts, misaligned motors and relative play between joints. In our experiments, we find that the 50-dimensional VNMC is a sensitive controller, with little hope of directly transferring from simulation to hardware. Anticipating this, we can now test several methods of compensating for this mismatch using our increasingly approximate simulators. In the future, we would like to take this approximations further and study when there is useful information even in over-simplified simulations of legged systems.
 
