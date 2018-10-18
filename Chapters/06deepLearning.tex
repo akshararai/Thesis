@@ -2,11 +2,11 @@
 
 \label{chap:deep}
 
-In this Chapter, we describe a second way of including simulation information in hardware experiments.
+In this Chapter, we describe a second way of including simulation information in hardware experiments. Instead of building feature transforms in simulation, and learning controllers on hardware, we learn robust policies in simulation and implement them on hardware. We present our experiments on the effect of policy structure on rate of transfer between simulation and hardware.
 
 \section{Neural network policies on the ATRIAS biped}
 
-Another way of transferring information between simulation and hardware is to directly learn a robust policy in simulation and deploy it on hardware. We train a deep neural network policy for controlling ATRIAS in simulation with ground height disturbance and test it on hardware. We experiment with different neural network controller structures, and study their effect on transfer from simulation to hardware, without any domain randomization. We show that structured neural network controllers have a fast training rate in simulation as well as higher rate of transfer to hardware. The structure also gives the user the power to modify the controller, if required, without having to re-train the neural network from scratch.
+One way of transferring information between simulation and hardware is to directly learn a robust policy in simulation and deploy it on hardware. We train a deep neural network policy for controlling ATRIAS in simulation with ground height disturbance and test it on hardware. We experiment with different neural network controller structures, and study their effect on transfer from simulation to hardware, without any domain randomization. We show that structured neural network controllers have a fast training rate in simulation as well as higher rate of transfer to hardware. The structure also gives the user the power to modify the controller, if required, without having to re-train the neural network from scratch.
 
 Deep reinforcement learning from scratch proved to be very challenging for a high-fidelity simulation of a bipedal robot. Deep RL methods depend on randomly exploring the space to get a notion of gradient of the cost. However, for underactuated bipedal robots most regions of space have very low reward, and hence no clear gradient. Stable walking regions in the controller space can be very narrow, making it unlikely to reach a promising controller by merely random sampling. To overcome this, we used behavior cloning to initialize our actor policy using the expert feedback-based reactive controller described in Section \ref{sec:raibert_cont}. Behavior cloning learns a policy over state-action pairs from expert trajectory by finding the policy parameters $\theta$ that solve the following maximum-likelihood optimization problem, as described in  \cite{rajeswaran2017learning}: 
 \begin{equation}
@@ -25,7 +25,8 @@ In our first setting, we create a general neural network policy without a lot of
 \begin{equation}
     \pi(x,v_{act},z,\dot{z},\theta,\dot{\theta})_{NN} \rightarrow  (F_z, F_x,x_p)
 \end{equation}
-The stance and swing control pipeline is similar to the expert and shown in Figure \ref{fig:NN_process}. %he expert controller provided above can be used to pre-train the neural network policy to walk on flat ground.
+The stance and swing control pipeline is similar to the expert and shown in Figure \ref{fig:NN_process}. The expert controller described in Section \ref{sec:raibert_cont} is used to pre-train the neural network policy to walk on flat ground.
+
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=.7\textwidth]{./img/NN.PNG}
@@ -33,7 +34,7 @@ The stance and swing control pipeline is similar to the expert and shown in Figu
     \label{fig:NN_process}
 \end{figure}
 
-While this policy still has the information about dynamics constraints of the robot through the inverse dynamics and inverse kinematics blocks, it loses the well-defined structure of the expert. This means that the output of the neural network is unpredictable, and the user does not have a lot of control over the behavior of the robot. Roboticists typically prefer controllers that can be understood and predictable, as well as can be modified if needed. In our second controller, we try to emulate this shared autonomy, which lets the user control the overall behavior of the robot, and the neural network helps improve the user-designed policy through deep RL.
+While this policy still has the information about dynamics constraints of the robot through the inverse dynamics and inverse kinematics blocks, it loses the well-defined structure of the expert. This means that the output of the neural network is unpredictable, and the user does not have a lot of control over the behavior of the robot. Roboticists typically prefer controllers that can be understood and predictable, as well as can be modified if needed. In our second controller, we try to emulate this shared autonomy, which lets the user control the overall behavior of the robot, and the neural network helps improve the user-designed policy through deep reinforcement learning.
 
 \subsection{Neural Network in the Heuristic Policy}\label{NN_HP}
 
@@ -65,7 +66,7 @@ Moreover, if the user wants to test a slightly different setting than the simula
 
 
 \section{Experiments with deep reinforcement learning}
-In this section we describe our experiments with deep reinforcement learning for bipedal robots. Our experiments compare a general neural network policy with a more structured policy, where the neural network helps modulate an expert controller. We compare both policies in simulation and hardware.
+In this section we describe our experiments with deep reinforcement learning for the ATRIAS bipedal robot. Our experiments compare a general neural network policy with a more structured policy, where the neural network helps modulate an expert controller. We compare both policies in simulation and hardware.
 
 \subsection{Simulation Experiments}
 %why doing simulation
@@ -149,7 +150,7 @@ The training plot of Heuristic Policy is shown on Figure \ref{fig:Reward}. As sh
 \end{figure}
 
 \subsection{Hardware Experiments}
-
+\label{sec:nn_expts}
 We tested 5 NN policies and 5 heuristic policies in our first set of hardware experiment, with the reward function described in Function \ref{reward_1}. 
 
 There is a large mismatch between simulation and hardware starting conditions for our system. Starting from rest is a significant challenge for bipedal robots, especially underactuated robots like ATRIAS. ATRIAS is incapable of balancing by standing in place, and needs to continue stepping to stay upright. Typically, a start-up routine is designed for these robots to reach some initial walking gait, and then the controller to be tested is initiated. For example \cite{hubicki2016atrias} start by executing a stepping motion in air, and a human holds on to the robot as its lowered onto the ground. We train our controllers to start from rest in both simulation and hardware, to avoid having to design a start-up routine. However, our simulation leg is not initially loaded, so the simulation has to make an initial push to keep the CoM from going too low. On the other hand, on hardware the robot starts in position control in the air and then is lowered. So as stance starts, there is already sufficient force in the leg, and the initial push (from simulation) makes the robot leave ground. Such a controller falls on hardware. This behavior is illustrated in Figure \ref{fig:NN_walking_hw} where the first two steps on hardware experience higher leg forces than the rest of the steps.

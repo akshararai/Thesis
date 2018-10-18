@@ -1,11 +1,11 @@
 \chapter{Experiments with feature transforms from simulation}
-
+\label{chap:expts}
 
 We now present our experiments to evaluate the different ways of transferring information from simulation to hardware described in the previous sections. We start by describing hardware experiments with feature transforms, followed by simulation experiments that study the effect of inaccurate simulations. 
 
 %\section{Experiments}
 
-Our key experiments with the domain-specific feature transform and the data-driven feature transform are conducted on the ATRIAS robot. We also include experiments on a 7-link biped in simulation. 
+Our key experiments with the domain-specific feature transform and the data-driven feature transform are conducted on the ATRIAS robot hardware. We also include experiments on a 7-link biped in simulation. 
 
 The experiments described in this Section are:
 \begin{itemize}
@@ -15,7 +15,7 @@ The experiments described in this Section are:
 \end{itemize}
 
 \section{Experiments with the DoG Transform}
-
+\label{sec:dog_expts}
 \subsection{Hardware experiments with the 5-dimensional controller}
 \label{sec:hdw_5d}
 The first set of hardware experiments were conducted on a 5-dimensional controller, described in Section~\ref{sec:raibert_cont} on the ATRIAS robot. The target speed profile for these experiments was $0.4 m/s \text{ (15 steps)} - 1.0 m/s \text{ (15 steps)} - 0.2 m/s \text{ (15 steps)} - 0 m/s \text{ (5 steps)}$. The total number of steps before the controller shut off were $50$. The cost function that was optimized was:
@@ -54,6 +54,7 @@ BO with \dogkernel found walking points in 3 trials in 5/5 runs. BO with SE foun
 
 %-----------------------------------------------------
 \subsection{Hardware experiments with the 9 dimensional controller}
+\label{subsec:dog_9d}
 The second set of hardware experiments were conducted on a 9-dimensional controller, described in Section \ref{sec:raibert_cont} on the ATRIAS robot. The target speed profile for these experiments was $0.4 m/s \text{ (30 steps)}$. The total number of steps before the controller shut off was $30$. The cost optimized was the same cost as in Equation \ref{eq:hdw_cost}. 
 
 Again, we sampled 100 random points on hardware and 3 of them walked for this speed profile. This means that random sampling has a 1/33 chance of sampling a good point. On the variable speed profile from Section \ref{sec:hdw_5d}, the number of successful points out of 100 were 0, implying a less than 1\% success rate. To keep the problem at hand reasonable, we used the simpler target speed profile. In comparison, the success rate in simulation is 8\% for the tougher profile, implying a greater mismatch between hardware and simulation than the 5-dimensional controller. 
@@ -139,7 +140,7 @@ It would be interesting to study the effect of a mismatch map on performance on 
 %We plan to test adjusted \dogkernel more in the future in this challenging setting that could be sensitive to simulation-hardware mismatch. 
 
 \subsection{Simulation experiments on a 16-dimensional controller}
-\label{sec:probform}
+\label{sec:7_link_expts}
 To make sure that our feature transform generalizes to multiple robot morphologies, we also did experiments on the 7-link biped, described in Section \ref{sec:7_link_biped}.
 
 \begin{figure}[t]
@@ -156,7 +157,7 @@ To make sure that our feature transform generalizes to multiple robot morphologi
 \end{figure}
 
 We conduct our experiments on models with mass and inertial disturbances and on different ground profiles. After collecting the DoG scores, we perturb the mass of each link, inertia and center of mass location randomly by up to $15\%$ of the original value. For mass/inertia we randomly pick a variable from a uniform distribution between $[-0.15,\ 0.15] \cdot M$, where $M$ is the original mass/inertia of the segment. Similarly we change the location of the center of mass by $[-0.15,\ 0.15] \cdot L/2$, where $L$ is the length of the link. These disturbances are different for each run of our algorithm, hence we test a wide range of possible modelling disturbances.
-For the ground profiles, we generate random ground height disturbances of upto $\pm 8cm$ per step.
+For the ground profiles, we generate random ground height disturbances of upto $\pm 8cm$ per step. This is a significant disturbance that can make successful controllers on flat ground fall, as shown in Figure \ref{fig_bo_locomotion_visualization_flat}.
 
 To ensure that our approach can perform well across various cost functions, we conduct experiments on two different costs, constructed such that parameter sets achieving low cost also achieve stable and robust walking gaits. The first cost function varies smoothly over the parameter space:
  
@@ -167,7 +168,7 @@ where $t$ is seconds walked, $d$ is the final CoM position, $v$ is mean velocity
 
 The second cost function is a slightly modified version of the cost used in~\cite{song2015neural} for experiments with \mbox{CMA-ES}, also similar to the cost described in previous sections. It penalizes policies that lead to falls in a non-smooth manner:
 \begin{align}
-cost_{CMA} = 		
+cost_{non-smooth} = 		
     \begin{cases}
 		300 - x_{fall} , \text{\small{if fall}} \\
 		100 ||v_{avg} - v_{tgt}|| + c_{tr}, \text{\small{if walk}}\\
@@ -178,7 +179,7 @@ Here $x_{fall}$ is the distance travelled before falling, $v_{avg}$ is the avera
 In the following sections we compare the performance of several baseline and state-of-the-art optimization algorithms in simulation. Motivated by the discussion in~\cite{calandra2016bayesian}, we include the baseline of uniform random search. While this search is uninformed and not sample-efficient, it could (perhaps surprisingly) serve as a competitive baseline in non-convex high-dimensional optimization problems. 
 %Theoretically -- it provides statistical guarantees of convergence, and practically -- it can outperform informed algorithms as well as grid search on high-dimensional problems (see Section~2~in~\cite{calandra2016bayesian} for further discussion).
 
-We also provide comparisons with \mbox{CMA-ES}~\cite{hansen2006cma} and Bayesian Optimization with a Squared Exponential kernel (basic BO). Since we were optimizing a non-convex function in a 16D space, it was not feasible to calculate the global minimum exactly. To estimate the global minimum for the costs we used, we ran CMA-ES (until convergence) and BO with our domain kernel (for 100 trials) for 50 runs without model disturbances on flat ground. 
+We also provide comparisons with \mbox{CMA-ES}~\citep{hansen2006cma} and Bayesian Optimization with a Squared Exponential kernel (basic BO). Since we were optimizing a non-convex function in a 16D space, it was not feasible to calculate the global minimum exactly. To estimate the global minimum for the costs we used, we ran CMA-ES (until convergence) and BO with our domain kernel (for 100 trials) for 50 runs without model disturbances on flat ground. 
 When reporting results, we plot the best results found in this easier setting as the estimated optimum for comparison.
 
 All the experiments described below are done for 50 independent runs, each with a unique set of modeling disturbances and a different ground profile for rough ground walking. Each run  consists of 100 trials or cost function evaluations, in which the optimization algorithm evaluates a parameter set for 100 seconds of simulation. Note that the disturbances and ground profiles remain constant across each run (100 trials).
@@ -236,13 +237,49 @@ This shows that the hip lean indeed helped walking on these terrains, and ideall
 
 \subsection{Summary of experiments with the DoG transform}
 
-\AR{Add a table summarizing results from previous section}
+
+
+\begin{table}[h!]
+\centering
+\ra{1.3}
+\small{
+\begin{tabular}{@{}rrrrr@{}} 
+\toprule
+Controller & Robot & Environment & Speed & Number of trials \\
+Dimension & & & profile & for stable walking \\
+
+\midrule
+
+Non-smooth cost \\
+
+5 & ATRIAS & Hardware & Variable & 3 \\
+
+9 & ATRIAS & Hardware & Constant & 5 \\
+
+9 & ATRIAS & Simulation & Constant & 9 \\
+
+16 & 7-link & Simulation & Constant & 60 \\
+
+50 & ATRIAS & Simulation & Constant & 10 \\
+
+Smooth cost \\
+
+16 & 7-link & Simulation & Constant & 25 \\
+
+\bottomrule
+\end{tabular}
+}
+\caption{Summary of experiments with DoG features in simulation and hardware on the ATRIAS biped and 7-link bipedal robot. All simulation experiments are conducted with un-modelled disturbances.}
+\label{tbl:dog_expts_details}
+\end{table}
+
+
 
 \section{Experiments with the NN transform}
 
-In this section we describe our experiments with cost-based and trajectory-based neural network kernels, described in Section \ref{}. We first consider the setting of optimizing a 5-dimensional controller for the ATRIAS robot from Section \ref{sec:raibert_cont}. We show that the cost-based kernel is able to improve sample efficiency over standard Bayesian Optimization. We present hardware experiments to demonstrate that our kernel allows obtaining a set of parameters close to optimal on the second trial for a constant target speed. With a variable target speed, it can find walking controllers reliably in 5 trials.
+In this section we describe our experiments with cost-based and trajectory-based neural network kernels, described in Section \ref{sec:nn_transform}. We first consider the setting of optimizing a 5-dimensional controller for the ATRIAS robot from Section \ref{sec:raibert_cont}. We show that the cost-based kernel is able to improve sample efficiency over standard Bayesian Optimization. We present hardware experiments to demonstrate that our kernel allows obtaining a set of parameters close to optimal on the second trial for a constant target speed. With a variable target speed, it can find walking controllers reliably in 5 trials.
 
-Next, we discuss simulation experiments with a 16 dimensional controller that utilizes a Neuromuscular model from Section \ref{} on a 7-link biped. These experiments show that our trajectory-based kernel is able to significantly outperform standard Bayesian optimization for a higher-dimensional controller even when a sharply discontinuous cost is used during optimization.
+Next, we discuss simulation experiments with a 16 dimensional controller that utilizes a Neuromuscular model from Section \ref{sec:7_link_biped} on a 7-link biped. These experiments show that our trajectory-based kernel is able to significantly outperform standard Bayesian optimization for a higher-dimensional controller even when a sharply discontinuous cost is used during optimization.
 
 \subsection{Hardware experiments with a 5-dimensional controller}
 \label{experiments_atrias}
@@ -250,18 +287,10 @@ Next, we discuss simulation experiments with a 16 dimensional controller that ut
 For our experiments on the ATRIAS robot we used a high-fidelity ATRIAS simulator from ~\cite{martin2015robust} to generate the data for learning the network. 
 %We did an initial analysis of the performance of our approach in simulation, followed by hardware experiments. 
 %Then we conducted a set of hardware experiments on the ATRIAS robot using a controller described in Section~\ref{sec:probform}. 
-We constructed a distance metric for a kernel used in Bayesian Optimization by training a neural network to reconstruct cost obtained from short simulations. We created a sobol grid on the input parameter space with 20000 points and ran short 3.5 second simulations on each of the corresponding 20000 parameter sets to compute the costs. We then used a fully connected network with 4 hidden layers (128, 64, 16, 4 units) with L1 loss to reconstruct the transformation of the cost described in section~\ref{sec:approach_asym}.
+We constructed a distance metric for a kernel used in Bayesian Optimization by training a neural network to reconstruct cost obtained from short simulations. We created a sobol grid on the input parameter space with 20000 points and ran short 3.5 second simulations on each of the corresponding 20000 parameter sets to compute the costs. We then used a fully connected network with 4 hidden layers (128, 64, 16, 4 units) with L1 loss to reconstruct the transformation of the cost described in Section~\ref{sec:approach_asym}.
 
-%\begin{figure}
-%\centering
-%\includegraphics[width=0.8\textwidth]{img/nn_sftpl_vs_vanilla_BO_vs_DoG_kernels}
-%\caption{\small{Initial tests in simulation.}}
-%\label{fig:bo_runs_atrias_sim}
-%\end{figure}
 
-%In Figure~\ref{fig:bo_runs_atrias_sim} we first compare the performance of BO that used our neural network kernel (\textit{asymNN}) versus using a standard Squared Exponential kernel (\textit{SE}) in simulation. For these experiments we used the cost in Equation~\ref{eq:cost_atrias},  Section~\ref{sec:approach_asym} with a target velocity of $1m/s$. Simulations with cost less than 50 yielded walking behavior, while cost less than 20 resulted in a stable walk close to the desired speed. BO with \textit{asymNN} kernel was able to reliably find points corresponding to stable walking behavior in only 8 trials. In contrast, BO with \textit{SE} kernel did not find stable walking solutions in the first 20 trials reliably. We also compare with the \dogkernel kernel. \textit{asymNN} is able to closely match the performance of \dogkernel in this setting after 8 trials.
-
-We sampled 100 random controllers with a target speed of $0.4m/s$ on hardware, and 16 controllers walked. A lower target speed meant that $\frac{1}{6}$ of the controller space was stable walking controllers. We completed 6 sets of runs of BO: 3 using \textit{asymNN} kernel and 3 using a standard \mbox{\textit{SE} kernel} with 10 trials each, leading to a \mbox{total of 60 hardware experiments}. Figure~\ref{fig:bo_runs_plot_atrias_hw} shows the performance of BO with SE versus \textit{asymNN} kernel. SE obtains a stable walking solution on the 3rd trial in one run, and on the 4th trial in the two other runs. \textit{asymNN} kernel is able to find the best-performing set of parameters on the second trial in each of the 3 runs. This confirms that using \textit{asymNN} kernel offers an improvement over using \textit{SE} kernel in this setting. We suggest that \textit{asymNN} reliably selects an excellent point on the 2nd trial  because such points lie far from  poorly performing subspace of parameters (under the distance metric constructed with \textit{asymNN}). 
+We sampled 100 random controllers with a target speed of $0.4m/s$ on hardware, and 16 controllers walked. A lower target speed meant that $\frac{1}{6}$ of the controller space was stable walking controllers. We completed 6 sets of runs of BO: 3 using \textit{asymNN} kernel and 3 using a standard SE kernel with 10 trials each, leading to a \mbox{total of 60 hardware experiments}. Figure~\ref{fig:bo_runs_plot_atrias_hw} shows the performance of BO with SE versus \textit{asymNN} kernel. SE obtains a stable walking solution on the 3rd trial in one run, and on the 4th trial in the two other runs. \textit{asymNN} kernel is able to find the best-performing set of parameters on the second trial in each of the 3 runs. This confirms that using \textit{asymNN} kernel offers an improvement over using SE kernel in this setting. We suggest that \textit{asymNN} reliably selects a successful point on the 2nd trial  because such points lie far from  poorly performing subspace of parameters (under the distance metric constructed with \textit{asymNN}). 
 
 While both SE kernel and \textit{asymNN} kernels perform very well in this setting, the \textit{asymNN} kernel is more biased towards sampling stable points than the SE kernel, as shown in Figure \ref{fig:bo_runs_plot_atrias_hw}. In the three runs, \textit{asymNN} kernel samples 23 stable controllers out of 30, while SE kernel samples 15 stable controllers. This implies that the search for optimal controllers is biased towards safety in the case of \textit{asymNN} kernel. This is desirable as stable points are less likely to break the robot.
 
@@ -274,8 +303,7 @@ While both SE kernel and \textit{asymNN} kernels perform very well in this setti
 \label{fig:bo_runs_plot_atrias_hw}
 \end{figure}
 
-On a more challenging, variable target speed profile of $0.4 m/s \text{ (15 steps)} - 1.0 m/s$ 
-$$\text{ (15 steps)} - 0.2 m/s \text{ (15 steps)} - 0 m/s \text{ (5 steps)}$, the performance of the \textit{asymNN} kernel is slightly worse than the \dogkernel, though still better than SE kernel. Figure \ref{fig:no_nn_all_3} shows BO with  \textit{asymNN} kernel, SE kernel and \dogkernel for the variable speed profile. \dogkernel can find walking controllers in 2 trials in all 3 runs, while it takes \textit{asymNN} kernel 5 trials. On the other hand, SE kernel fails to reliably find controllers even after 20 trials.
+On a more challenging, variable target speed profile of $0.4 m/s$ $\text{ (15 steps)} - 1.0 m/s \text{ (15 steps)} - 0.2 m/s \text{ (15 steps)} - 0 m/s \text{ (5 steps)}$, the performance of the \textit{asymNN} kernel is slightly worse than the \dogkernel, though still better than SE kernel. Figure \ref{fig:bo_nn_all_3} shows BO with  \textit{asymNN} kernel, SE kernel and \dogkernel for the variable speed profile. \dogkernel can find walking controllers in 2 trials in all 3 runs, while it takes \textit{asymNN} kernel 5 trials. On the other hand, SE kernel fails to reliably find controllers even after 20 trials.
 
 \begin{figure}
     \centering
@@ -305,23 +333,23 @@ Hence, even if our policy parametrization was chosen so that steady walking poin
 
 \begin{figure}
     \centering
-    \includegraphics[width = 0.5\textwidth]{img/9d_hdw_nn.png}}
-    \caption{Bayesian optimization of a 9-dimensional kernel with the NN-based kernel.}
+    \includegraphics[width = 0.5\textwidth]{img/9d_hdw_nn.png}
+    \caption{Bayesian optimization of a 9-dimensional controller with the \textit{trajNN} kernel.}
     \label{fig:9d_hdw_nn}
 \end{figure}
-In the next set of experiments, we evaluated performance of the NN-based kernel described in Section~\ref{subsec:proposed_traj_nn}. We optimize the 9-dimensional controller from Section \ref{subsec:raibert_cont}. 
+In the next set of experiments, we evaluated performance of the \textit{trajNN} kernel described in Section~\ref{sec:approach_traj}. We optimize the 9-dimensional controller from Section \ref{sec:raibert_cont}. 
 
-The target of hardware experiments was to walk for 30 steps at $0.4m/s$, similar to Section \ref{subsec:dog-9d}. We observed that the SE performance was slightly better as compared to the old experiments, even though starting from the same random samples, hyper-parameter setting and speed profile. We attribute this change to a better estimation and control of the CoM vertical height, owing to a new IMU on the robot. 
+The target of hardware experiments was to walk for 30 steps at $0.4m/s$, similar to Section \ref{subsec:dog_9d}. We observed that the SE performance was slightly better as compared to the old experiments, even though starting from the same random samples, hyper-parameter setting and speed profile. We attribute this change to a better estimation and control of the CoM vertical height, owing to a new IMU on the robot. 
 
 
-Figure~\ref{fig:9d_hdw_nn} shows comparison of BO with NN-based kernel and SE kernels. We conducted 5 runs of both algorithms with 10 trials in each run, leading to a total of 100 robot trials. BO with the NN-based kernel found walking points in all 5 runs within 6 trials, while BO with SE kernel only found walking points in 2 of 5 runs in 10 trials.
-Hence, even without explicit hand-designed domain knowledge, like the \dogkernel kernel, the NN-based kernel is able to extract useful information from simulation and successfully guide hardware experiments.
+Figure~\ref{fig:9d_hdw_nn} shows comparison of BO with \textit{trajNN} kernel and SE kernels. We conducted 5 runs of both algorithms with 10 trials in each run, leading to a total of 100 robot trials. BO with the \textit{trajNN} kernel found walking points in all 5 runs within 6 trials, while BO with SE kernel only found walking points in 2 of 5 runs in 10 trials.
+Hence, even without explicit hand-designed domain knowledge, like the \dogkernel kernel, the \textit{trajNN} kernel is able to extract useful information from simulation and successfully guide hardware experiments.
 
 
 \subsection{Simulation experiments with the 16-dimensional controller}
 \label{experiments_nm}
 
-In section~\ref{sec:approach_traj} we introduced a cost-agnostic approach for constructing an informed kernel from simulations. Our approach is to train a neural network to reconstruct trajectory information. In this Section, we describe our experiments with 16-dimensional controller of the Neuromuscular model on a 7-link biped. We created a grid of 100K points in the input parameter space  and ran short 5 second simulations on each of the corresponding 100K parameter sets to collect the trajectory summaries. We then used a fully connected network with 4 hidden layers (512, 128, 32 units) with L1 loss to reconstruct the summaries of the trajectories (as described in section~\ref{sec:approach_traj}). This transformation induced by the neural network was used as a re-parameterization from the input space of 16-dimensional controller parameters to 8-dimensional space of trajectory summaries. These 8-dimensional outputs of the neural network define kernel distances in the informed kernel (\textit{trajNN}). All experiments were conducted on perturbed models, as described in Section \ref{sec:probform}.
+In section~\ref{sec:approach_traj} we introduced a cost-agnostic approach for constructing an informed kernel from simulations. Our approach is to train a neural network to reconstruct trajectory information. In this Section, we describe our experiments with 16 dimensional controller of the Neuromuscular model on a 7-link biped. We created a grid of 100K points in the input parameter space  and ran short 5 second simulations on each of the corresponding 100K parameter sets to collect the trajectory summaries. We then used a fully connected network with 4 hidden layers (512, 128, 32 units) with L1 loss to reconstruct the summaries of the trajectories (as described in section~\ref{sec:approach_traj}). This transformation induced by the neural network was used as a re-parameterization from the input space of 16-dimensional controller parameters to 8-dimensional space of trajectory summaries. These 8-dimensional outputs of the neural network define kernel distances in the informed kernel (\textit{trajNN}). All experiments were conducted on perturbed models, as described in Section \ref{sec:probform}.
 
 Figures~\ref{fig:smooth_cost_bo_runs}, \ref{fig:nonsmooth_cost_bo_runs} illustrate our experiments comparing using \textit{trajNN} versus using Squared Exponential (\textit{SE}) kernel for BO. To analyze the performance of \textit{trajNN} on different cost functions we conducted experiments on two different costs suggested in prior literature. The first cost promotes walking further and longer before falling, while penalizing deviations from the target speed~\citep{rai2016sample}:
 \begin{equation}
@@ -367,12 +395,12 @@ The difference in performance on the two costs is due to the nature of the two c
 
 \begin{figure}
     \centering
-    \includegraphics[width = 0.5\textwidth]{img/NN4_20runs_250K_holdout.png}}
-    \caption{50-dimensional controller with a trajNN kernel in simulation.}
+    \includegraphics[width = 0.5\textwidth]{img/NN4_20runs_250K_holdout.png}
+    \caption{50-dimensional controller with a \textit{trajNN} kernel in simulation.}
     \label{fig:nn4_vnmc}
 \end{figure}
 
-Our last set of simulation experiments were on the 50-dimensional controller, with the same experimental setting as Section \ref{}. The neural network kernel was trained to reconstruct the summaries of simulation trajectories over 200,000 simulation controllers. As can be seen in Figure \ref{fig:nn4_vnmc}, BO with NN-based kernel was able to find walking controllers in 20 trials in $95\%$ of the runs. This performance is similar to \dogkernel which can find walking controllers in 20 trials for $100\%$ of the runs. 
+Our last set of simulation experiments were on the 50-dimensional controller, with the same experimental setting as Section \ref{sec:vnmc_expt}. The neural network kernel was trained to reconstruct the summaries of simulation trajectories over 200,000 simulation controllers. As can be seen in Figure \ref{fig:nn4_vnmc}, BO with NN-based kernel was able to find walking controllers in 20 trials in $95\%$ of the runs. This performance is similar to \dogkernel which can find walking controllers in 20 trials for $100\%$ of the runs. 
 
 These results show that while the NN-based kernel uses lesser domain specific information than \dogkernel, its performance in simulation and hardware is very comparable to \dogkernel. As an additional advantage, the weights of the NN-based kernel can be learned from data experienced on hardware, by continuing to do gradient descent. This leads to a simple and straight-forward way of updating the kernel from hardware experiments. 
 
@@ -399,13 +427,44 @@ $k_{\textit{trajNN}}$ & 9 & 100K & 5s & 4 & $t_{walk}$, $x_{end}$, $\theta_{avg}
 \bottomrule
 \end{tabular}
 }
-\caption{Simulation Data Collection Details. $score_{DoG}$ was described in Section \ref{subsec:proposed_dog_transform}. For $k_{\textit{trajNN}}$: $t_{walk}$ is time walked in simulation before falling, $x_{end}$ and $y_{end}$ are the $x$ and $y$ positions of Center of Mass (CoM) at the end of the short simulation, $\theta$ is the torso angle, $\dot{\theta}$ is the torso velocity, $v$ is the CoM speed ($v_{x}$ is the horizontal and $v_y$ is the vertical component), $c_{\tau}$ is the squared sum of torques applied; $\pmb{\textit{traj}}_{x}$, $\pmb{\textit{traj}}_{\theta}$ denote vectors with mean CoM and $\theta$ measurements every second.}
+\caption{Simulation Data Collection Details. $score_{DoG}$ was described in Section \ref{sec:dog_transform}. For $k_{\textit{trajNN}}$: $t_{walk}$ is time walked in simulation before falling, $x_{end}$ and $y_{end}$ are the $x$ and $y$ positions of Center of Mass (CoM) at the end of the short simulation, $\theta$ is the torso angle, $\dot{\theta}$ is the torso velocity, $v$ is the CoM speed ($v_{x}$ is the horizontal and $v_y$ is the vertical component), $c_{\tau}$ is the squared sum of torques applied; $\pmb{\textit{traj}}_{x}$, $\pmb{\textit{traj}}_{\theta}$ denote vectors with mean CoM and $\theta$ measurements every second.}
 \label{tbl:kernel_details}
 \end{table}
 
 
-\AR{Add an overview table from experiments in this section.}
+\begin{table}[h!]
+\centering
+\ra{1.3}
+\small{
+\begin{tabular}{@{}rrrrrr@{}} 
+\toprule
+Controller & Robot & NN kernel & Environment & Speed & Number of trials \\
+Dimension &        & Dimension &              & profile & for stable walking \\
 
+\midrule
+
+Non-smooth cost \\
+
+5 & ATRIAS & 1 & Hardware & Constant & 2 \\
+
+5 & ATRIAS & 1 & Hardware & Variable & 5 \\
+
+9 & ATRIAS & 4 & Hardware & Constant & 6 \\
+
+16 & 7-link &8 & Simulation & Constant & 90 \\
+
+50 & ATRIAS &13 & Simulation & Constant & 15 \\
+
+Smooth cost \\
+
+16 & 7-link & 8 & Simulation & Constant & 50 \\
+
+\bottomrule
+\end{tabular}
+}
+\caption{Summary of experiments with neural network features in simulation and hardware on the ATRIAS biped and 7-link bipedal robot. All simulation experiments are conducted with un-modelled disturbances.}
+\label{tbl:nn_expts_details}
+\end{table}
 
 \section{Effect of inaccurate simulations on the performance}
 
@@ -418,7 +477,7 @@ $k_{\textit{trajNN}}$ & 9 & 100K & 5s & 4 & $t_{walk}$, $x_{end}$, $\theta_{avg}
 %\label{fig:50d_sim}
 %\end{figure}
 
-In this section, we describe our experiments with increasing simulation-hardware mismatch and its effect on approaches that use information from simulation during hardware optimization. The quality of information transfer between simulation and hardware depends not only on the mismatch between the two, but also on the controller used. For a robust controller, small dynamics errors would not cause a significant deterioration in performance, while for a sensitive controller this might be much more detrimental. There is still an advantage to studying such a sensitive controller, as it might be much more energy efficient and versatile. In our experiments, the 50-dimensional VNMC described in Section \ref{subsec:VNMC_cont} is capable of generating very efficient gaits but is sensitive to modelling errors. Figure \ref{fig:sim_NM_Atrias_50d} shows the performance of the DoG-based and adjusted DoG-based kernel on the original high-fidelity simulator. While both methods find walking points in 20 trials, adjusted-DoG performs better. There is mismatch even between short $5s$ and long $30s$ simulations for this controller. This mismatch is compensated by the adjusted-DoG kernel.
+In this section, we describe our experiments with increasing simulation-hardware mismatch and its effect on approaches that use information from simulation during hardware optimization. The quality of information transfer between simulation and hardware depends not only on the mismatch between the two, but also on the controller used. For a robust controller, small dynamics errors would not cause a significant deterioration in performance, while for a sensitive controller this might be much more detrimental. There is still an advantage to studying such a sensitive controller, as it might be much more energy efficient and versatile. In our experiments, the 50-dimensional VNMC described in Section \ref{sec:VNMC_cont} is capable of generating very efficient gaits but is sensitive to modelling errors. Figure \ref{fig:sim_NM_Atrias_50d} shows the performance of the DoG-based and adjusted DoG-based kernel on the original high-fidelity simulator. While both methods find walking points in 20 trials, adjusted-DoG performs better. There is mismatch even between short $5s$ and long $30s$ simulations for this controller. This mismatch is compensated by the adjusted-DoG kernel.
 
 
 In the rest of this section, we provide experimental analysis of settings with increasing simulated mismatch and their effect on optimization of the 50-dimensional VNMC. We compare several approaches that improve sample-efficiency of BO and investigate if the improvement they offer is robust to mismatch between the simulated setting used for constructing kernel/prior and the setting on which BO is run. 
@@ -441,7 +500,7 @@ In the rest of this section, we provide experimental analysis of settings with i
 \caption{\small{BO is run on the original simulator. Informed kernels perform well despite significant mismatch, when kernels are generated using simulator with simplified gear dynamics (left). In the case of severe mismatch, when the boom model is also removed, informed kernels still improve over baseline SE (right). Plots show best cost for mean over 50 runs for each algorithm, 95\% CIs.}}
 \label{fig:compare_dog}
 \end{figure} 
-First, we examine the performance of our proposed approaches with informed kernels: $k_{DoG}$, $k_{\text{trajNN}}$ and $k_{DoG_{adj}}$. Figure~\ref{fig:compare_gear_dynamics} shows the case when informed kernels are generated using inaccurate dynamics models, as described in Section \ref{}. The first approximate simulator has simplified gear dynamics while BO is run on the original simulator. The second approximation removes the boom of the robot and simulates a purely 2-dimensional robot.
+First, we examine the performance of our proposed approaches with informed kernels: $k_{DoG}$, $k_{\text{trajNN}}$ and $k_{DoG_{adj}}$. Figure~\ref{fig:compare_gear_dynamics} shows the case when informed kernels are generated using inaccurate dynamics models, as described in Section \ref{sec:mismatch}. The first approximate simulator has simplified gear dynamics while BO is run on the original simulator. The second approximation removes the boom of the robot and simulates a purely 2-dimensional robot.
 
 When kernel is generated in simulator with approximate gear dynamics, all runs with informed kernels find walking solutions in 50 trials, while for SE only $70\%$ of the runs have walking solutions.
 
@@ -500,7 +559,7 @@ Next, we discuss experiments with our implementation of Intelligent Trial and Er
 Cost of each selected controller is added to the prior and BO was performed in the behavior space, like in \cite{cully2015robots}.
 
 Figure~\ref{fig:cully_prior_sim_versions} shows BO with IT\&E constructed using different versions of the simulator. \mbox{IT\&E} constructed using simplified gear dynamics simulator is slightly less sample-efficient than the straightforward `cost prior' approach. When constructed with the simulator with no boom, \mbox{IT\&E} is able to improve over uninformed BO. However, it only finds walking points in 77\% of the runs in 50 trials in  this case, as some of the generated maps contained no controllers that could walk on the `hardware'. This is a shortcoming of the IT\&E algorithm, as it eliminates a very large part of the search space and if the pre-selected space does not contain a walking point, no walking controllers can be sampled with BO. This problem could possibly be avoided by using a finer grid, or a different behavior metric. However tuning such hyper-parameters can turn out to be expensive, in computation and hardware experiment time.
-
+ 
 
 
 To separate the effects of using simulation information in prior mean vs kernel, we evaluated a kernel-only version of \mbox{IT\&E} algorithm. Figure~\ref{fig:cully_kernel_sim_versions} shows these results. It shows that the cost prior is crucial for the success of IT\&E and performance deteriorates without it. Hence, it is not practical to use IT\&E on a cost different than what it was generated for.
@@ -509,11 +568,11 @@ Nonetheless, Figure~\ref{fig:compare_dog} showed that BO with adjusted DoG kerne
 
 In summary, we created two simulators with increasing modelling approximations, and studied the effect of using these to aid optimization on the original simulator. We found that while methods that use cost in the prior of BO can be very sample-efficient in low mismatch, their performance worsens as mismatch increases. \mbox{IT\&E} introduced in \cite{cully2015robots} uses simulation information in both prior mean and kernel, and is very sample-efficient in cases of low mismatch. Even with high mismatch, it performs better than just prior-based BO but doesn't find walking controllers reliably. In comparison, adjusted DoG-based kernel performed well in all the tested scenarios. All of this shows that the adjusted DoG-based kernel can reliably improve sample-efficiency of BO even when the mismatch between simulation and hardware is high. We would like to continue working in this direction and explore the usefulness of even simpler simulators in the future.
 
-\AR{Add note about smooth cost and performance}
+%\AR{Add note about smooth cost and performance}
 
 \subsection{Incorrect dynamics parameters}
 
-Our next set of experiments create ``simulated hardware" that is increasingly different from the simulation, in which the DoG features were collected. This is done by changing the mass, inertia, center of mass location, friction coefficient of the ground contact models, ground stiffness and actuator delay, as described in Section \ref{}.
+Our next set of experiments create ``simulated hardware" that is increasingly different from the simulation, in which the DoG features were collected. This is done by changing the mass, inertia, center of mass location, friction coefficient of the ground contact models, ground stiffness and actuator delay, as described in Section \ref{sec:mismatch}.
 
 \begin{figure}[h!]
 \centering
@@ -528,7 +587,5 @@ Our next set of experiments create ``simulated hardware" that is increasingly di
 
 As shown in Figure \ref{fig:dist_controllers}, adjusted-DoG kernel obtains walking controllers in less than 10 trials for 5 and 9-dimensional controllers with up to $\pm$ 60\% perturbation of dynamics parameters. In comparison, while for the 5-dimensional controller BO with SE finds walking controllers in less than 10 trials, its performance deteriorates for the 9-dimensional controller. 
 Our approach can scale well even to 50 dimensions, learning walking VNMC controllers reliably in less than 20 trials, with up to $\pm$ 50\% perturbation of dynamics parameters.
-
-\AR{Add a summary of experiments in this section}
 
 
