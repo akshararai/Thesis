@@ -10,9 +10,9 @@ One way of transferring information between simulation and hardware is to direct
 
 Deep reinforcement learning from scratch proved to be very challenging for a high-fidelity simulation of a bipedal robot. Deep RL methods depend on randomly exploring the space to get a notion of gradient of the cost. However, for underactuated bipedal robots most regions of space have very low reward, and hence no clear gradient. Stable walking regions in the controller space can be very narrow, making it unlikely to reach a promising controller by merely random sampling. To overcome this, we used behavior cloning to initialize our actor policy using the expert feedback-based reactive controller described in Section \ref{sec:raibert_cont}. Behavior cloning learns a policy over state-action pairs from expert trajectory by finding the policy parameters $\theta$ that solve the following maximum-likelihood optimization problem, as described in  \cite{rajeswaran2017learning}: 
 \begin{equation}
-    maximize_\theta \sum_{(s,a^*) \in \rho_D} ln \, \pi_\theta (a^*|s)
+    maximize_\theta \sum_{(s,u^*) \in \rho_D} ln \, \pi_\theta (u^*|s)
 \end{equation}
-where $\rho_D$ indicates the expert's trajectory distribution, with  $a^*$ is actions that expert took, and $s$ are the states visited.
+where $\rho_D$ indicates the expert's trajectory distribution, with  $u^*$ is actions that expert took, and $s$ are the states visited.
 
 Similarly, rewards accumulated during the expert's demonstrations can be used to pre-train a Q-function by minimizing TD error \citep{sendonaris2017learning}. As the Q-function provides the guidance for policy update, a well pre-trained Q-function benefits actor training as well. 
 
